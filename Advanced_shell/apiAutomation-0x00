@@ -1,0 +1,11 @@
+#!/bin/bash
+
+# Make API request for Pikachu
+response_code=$(curl -s -o data.json -w "%{http_code}" https://pokeapi.co/api/v2/pokemon/pikachu)
+
+# Check if request was successful
+if [ "$response_code" -eq 200 ]; then
+    echo "Data saved to data.json"
+else
+    echo "Error: Failed to fetch Pikachu data (HTTP $response_code)" >> errors.txt
+fi
