@@ -6,9 +6,7 @@ pokemon_list=("bulbasaur" "ivysaur" "venusaur" "charmander" "charmeleon")
 # Create output directory if needed
 mkdir -p pokemon_data
 
-# Array for process IDs
-pids=()
-
+# Fetch data for all Pokémon in parallel using background processes
 for pokemon in "${pokemon_list[@]}"; do
     (
         echo "Fetching data for $pokemon..."
@@ -19,12 +17,12 @@ for pokemon in "${pokemon_list[@]}"; do
             echo "Failed to fetch $pokemon"
         fi
     ) &
-    pids+=($!)
 done
 
-# Wait for all background processes
-for pid in "${pids[@]}"; do
-    wait $pid
-done
+# Wait for all background processes using jobs command
+# Method 1: Using jobs command to track processes
+job_count=$(jobs -p | wc -l)
+echo "Waiting for $job_count background jobs to complete..."
+wait
 
 echo "All fetches complete."
