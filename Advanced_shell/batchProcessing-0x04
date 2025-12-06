@@ -6,21 +6,7 @@ pokemon_list=("bulbasaur" "ivysaur" "venusaur" "charmander" "charmeleon")
 # Create output directory if needed
 mkdir -p pokemon_data
 
-# Array to store process IDs
-pids=()
-
-# Function to clean up background processes on exit or interruption
-cleanup() {
-    echo "Interrupt received. Terminating background processes..."
-    # Kill all background processes
-    kill "${pids[@]}" 2>/dev/null
-    exit 1
-}
-
-# Set up trap to catch SIGINT (Ctrl+C) and SIGTERM
-trap cleanup SIGINT SIGTERM
-
-echo "Starting parallel data fetching for ${#pokemon_list[@]} Pokémon..."
+echo "Starting parallel data fetching..."
 
 # Fetch data for all Pokémon in parallel using background processes
 for pokemon in "${pokemon_list[@]}"; do
@@ -30,18 +16,22 @@ for pokemon in "${pokemon_list[@]}"; do
         if [ $? -eq 0 ]; then
             echo "Saved data to pokemon_data/$pokemon.json ✅"
         else
-            echo "Failed to fetch $pokemon ❌"
+            echo "Failed to fetch $pokemon"
         fi
     ) &
-    pids+=($!)
 done
 
-echo "All fetches started. Waiting for completion..."
-echo "Process IDs: ${pids[@]}"
+# Show background jobs
+jobs
 
-# Wait for all background processes to complete
-for pid in "${pids[@]}"; do
-    wait $pid 2>/dev/null
-done
+# Wait for all background processes using jobs command
+echo "Waiting for background jobs to complete..."
+wait $(jobs -p)
+
+# Check if any jobs are still running and kill them if necessary
+if jobs -p >/dev/null 2>&1; then
+    echo "Some jobs still running, killing them..."
+    kill $(jobs -p) 2>/dev/null
+fi
 
 echo "All fetches complete."
